@@ -9,10 +9,8 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 
-# --- Configuration ---
-API_URL = "http://127.0.0.1:8000/api"
+API_URL = "https://chemicalvisualizer-4c97.onrender.com/api"
 
-# --- Custom KPI Card Widget ---
 class KPICard(QFrame):
     def __init__(self, title, color_code):
         super().__init__()
@@ -41,29 +39,27 @@ class KPICard(QFrame):
     def set_value(self, value, unit=""):
         self.value_lbl.setText(f"{value} {unit}")
 
-# --- Matplotlib Canvas ---
 class MplCanvas(FigureCanvas):
     def __init__(self, parent=None, width=5, height=4, dpi=100):
         self.fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = self.fig.add_subplot(111)
         super(MplCanvas, self).__init__(self.fig)
 
-# --- Main Window ---
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Chemical Visualizer (Desktop)")
         self.setGeometry(100, 100, 1200, 800)
-        self.setStyleSheet("background-color: #f4f6f8;") # Light gray background like React
+        self.setStyleSheet("background-color: #f4f6f8;") 
 
-        # Main Layout Container
+       
         main_widget = QWidget()
         self.setCentralWidget(main_widget)
         self.layout = QVBoxLayout(main_widget)
         self.layout.setContentsMargins(20, 20, 20, 20)
         self.layout.setSpacing(20)
 
-        # 1. Header & Actions
+        
         header_layout = QHBoxLayout()
         
         title = QLabel("Dashboard Overview")
@@ -101,7 +97,7 @@ class MainWindow(QMainWindow):
         header_layout.addWidget(btn_upload)
         self.layout.addLayout(header_layout)
 
-        # 2. KPI Section
+       
         kpi_layout = QHBoxLayout()
         self.card_count = KPICard("Total Units", "#3f51b5")
         self.card_flow = KPICard("Avg Flowrate", "#2e7d32")
@@ -114,10 +110,10 @@ class MainWindow(QMainWindow):
         kpi_layout.addWidget(self.card_temp)
         self.layout.addLayout(kpi_layout)
 
-        # 3. Content Section (Chart + Table)
+        
         content_layout = QHBoxLayout()
 
-        # Left: Chart
+       
         chart_frame = QFrame()
         chart_frame.setStyleSheet("background-color: white; border-radius: 8px;")
         chart_layout = QVBoxLayout(chart_frame)
@@ -126,7 +122,6 @@ class MainWindow(QMainWindow):
         chart_layout.addWidget(self.canvas)
         content_layout.addWidget(chart_frame, stretch=2)
 
-        # Right: Table
         table_frame = QFrame()
         table_frame.setStyleSheet("background-color: white; border-radius: 8px;")
         table_layout = QVBoxLayout(table_frame)
@@ -143,7 +138,6 @@ class MainWindow(QMainWindow):
 
         self.layout.addLayout(content_layout)
 
-        # Initial Data Load
         self.fetch_data()
 
     def upload_file(self):
@@ -176,14 +170,12 @@ class MainWindow(QMainWindow):
             print(e)
 
     def update_ui(self, data):
-        # Update KPIs
         stats = data['stats']
         self.card_count.set_value(stats['total_count'])
         self.card_flow.set_value(int(stats['avg_flow'] or 0), "m³/h")
         self.card_pressure.set_value(round(stats['avg_pressure'] or 0, 1), "bar")
         self.card_temp.set_value(int(stats['avg_temp'] or 0), "°C")
 
-        # Update Chart
         dist = data['distribution']
         labels = [d['equipment_type'] for d in dist]
         counts = [d['count'] for d in dist]
@@ -193,7 +185,6 @@ class MainWindow(QMainWindow):
         self.canvas.axes.set_title("Equipment Count by Type")
         self.canvas.draw()
 
-        # Update Table
         rows = data['data']
         self.table.setRowCount(len(rows))
         for i, row in enumerate(rows):
@@ -204,7 +195,6 @@ class MainWindow(QMainWindow):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     
-    # Global Font
     font = QFont("Segoe UI", 10)
     app.setFont(font)
 

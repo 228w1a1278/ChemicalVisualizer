@@ -14,7 +14,6 @@ import { getSummary, uploadFile } from '../services/api';
 import KpiCard from '../components/KpiCard';
 import Navbar from '../components/Navbar';
 
-// Register ChartJS components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const Dashboard = () => {
@@ -22,7 +21,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Fetch data on load
+
   const fetchData = async () => {
     try {
       const res = await getSummary();
@@ -30,7 +29,6 @@ const Dashboard = () => {
       setError('');
     } catch (err) {
       console.error(err);
-      // Don't show error if it's just empty data
       if(err.response && err.response.status !== 204) setError("Failed to fetch data.");
     }
   };
@@ -41,7 +39,6 @@ const handleDownloadPdf = () => {
   window.open('http://127.0.0.1:8000/api/export-pdf/', '_blank');
 };
 
-  // Handle File Upload
 const handleFileChange = async (e) => {
     if (!e.target.files[0]) return;
     
@@ -54,9 +51,8 @@ const handleFileChange = async (e) => {
       await fetchData(); 
       setError('');
     } catch (err) {
-      console.error("Upload Error Details:", err); // Look at Console (F12)
+      console.error("Upload Error Details:", err); 
       
-      // Show the specific message from the backend if available
       const backendMsg = err.response?.data?.error || "Upload failed. Please check CSV format.";
       setError(backendMsg);
     } finally {
@@ -64,7 +60,6 @@ const handleFileChange = async (e) => {
     }
   };
 
-  // Chart Configuration
   const chartData = {
     labels: data?.distribution?.map(d => d.equipment_type) || [],
     datasets: [
@@ -84,7 +79,6 @@ const handleFileChange = async (e) => {
       
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         
-        {/* Header Section */}
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
           <div>
             <Typography variant="h4" fontWeight="bold" color="textPrimary">
@@ -105,13 +99,12 @@ const handleFileChange = async (e) => {
             {loading ? "Processing..." : "Upload CSV"}
             <input type="file" hidden accept=".csv" onChange={handleFileChange} />
           </Button>
-          {/* Inside the Header Box, next to Upload Button */}
         <Button 
            variant="outlined" 
            color="secondary"
            startIcon={<PictureAsPdfIcon />}
            onClick={handleDownloadPdf}
-           sx={{ mr: 2, padding: '10px 20px' }} // Margin right to separate buttons
+           sx={{ mr: 2, padding: '10px 20px' }} 
           >
           Download Report
         </Button>
@@ -122,7 +115,6 @@ const handleFileChange = async (e) => {
 
         {data && (
           <>
-            {/* KPI Cards Row */}
             <Grid container spacing={3} mb={4}>
               <Grid item xs={12} sm={6} md={3}>
                 <KpiCard title="Total Units" value={data.stats.total_count} unit="" icon={<AssessmentIcon />} color="#3f51b5" />
@@ -152,7 +144,7 @@ const handleFileChange = async (e) => {
                 </Paper>
               </Grid>
 
-              {/* Data Preview Table (Simplified for brevity) */}
+              {/* Data Preview Table */}
               <Grid item xs={12} md={5}>
                 <Paper sx={{ p: 3, display: 'flex', flexDirection: 'column', height: 400, overflow: 'auto' }}>
                   <Typography component="h2" variant="h6" color="primary" gutterBottom>

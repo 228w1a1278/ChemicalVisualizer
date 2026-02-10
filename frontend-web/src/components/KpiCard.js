@@ -1,8 +1,7 @@
-// src/components/KpiCard.js
 import React from 'react';
 import { Card, CardContent, Typography, Box } from '@mui/material';
 
-// Rename function from KPI_Card to KpiCard
+
 const KpiCard = ({ title, value, unit, icon, color }) => {
   return (
     <Card sx={{ height: '100%', boxShadow: 3, borderLeft: `5px solid ${color}` }}>
