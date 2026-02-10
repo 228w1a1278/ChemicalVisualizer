@@ -2,7 +2,7 @@
 
 <br />
 
-- **🔴 Live Web Demo:** [https://chemical-project-frontend.vercel.app](https://chemical-project-frontend.vercel.app)
+- **🔴 Live Web Demo:** [https://chemical-visualizer-seven.vercel.app/](https://chemical-visualizer-seven.vercel.app/)
 - **☁️ Live Backend API:** [https://chemicalvisualizer-4c97.onrender.com](https://chemicalvisualizer-4c97.onrender.com)
 
 ---
@@ -38,7 +38,7 @@ It’s not just two separate apps. The **Django Backend** acts as the central br
 ## 📸 Screenshots
 
 <p align="center">
-  <img width="600" alt="Web Dashboard View" src="assets/desktop-app.png />
+  <img width="600" alt="Web Dashboard View" src="assets/desktop-app.png" />
   <br/>
   <em>React Web Dashboard with Analytics</em>
 </p>
@@ -106,6 +106,8 @@ pip install PyQt5 requests matplotlib
 
 # 4. Run the desktop app
 python main.py
+
+```
 
 👤 Author
 Chilla Sai Charan
