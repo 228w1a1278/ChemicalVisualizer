@@ -1,47 +1,62 @@
-# Chemical Equipment Parameter Visualizer - Hybrid Analytics Platform (Django + React + PyQt5)
+# Chemical Equipment Parameter Visualizer
 
-Welcome to the **Chemical Equipment Parameter Visualizer**, a fully functional hybrid application built using Django REST Framework, React.js, and PyQt5. This project demonstrates how a single robust backend can simultaneously power a modern web dashboard and a native desktop application. 
+<br />
 
-Whether you’re a correction agent or a hiring manager, this project reflects my capabilities in full-stack development, including complex data parsing with Pandas, API design, responsive frontend logic, and cross-platform integration.
+- **🔴 Live Web Demo:** [https://chemical-project-frontend.vercel.app](https://chemical-project-frontend.vercel.app)
+- **☁️ Live Backend API:** [https://chemicalvisualizer-4c97.onrender.com](https://chemicalvisualizer-4c97.onrender.com)
 
-## 🗳️ About the Project
-This application is designed for the analysis and visualization of chemical equipment data. It features a **Hybrid Architecture** where a Django backend serves as the central "brain," processing CSV uploads and serving analytical data via API.
+---
 
-Users can interact with the system through two interfaces:
-1.  **Web Dashboard (React):** A responsive browser-based UI for uploading files, viewing interactive charts, and generating PDF reports.
-2.  **Desktop App (PyQt5):** A native OS application that syncs in real-time with the web data, providing a seamless experience across platforms.
+## 👨‍💻 Project Overview
 
-## 🔑 Core Features
-* **Hybrid Synchronization:** Upload a file on the Desktop app, and the Web dashboard updates instantly (and vice versa).
-* **Data Analytics Engine:** Uses **Pandas** to calculate average flowrates, pressures, and equipment distributions from raw CSV data.
-* **Interactive Visualization:**
-    * **Web:** Dynamic charts using **Chart.js** and **Material UI**.
-    * **Desktop:** Native plotting using **Matplotlib** embedded in PyQt5.
-* **PDF Report Generation:** One-click export of a professional summary report using **ReportLab**.
-* **Smart History Management:** The backend automatically manages storage, keeping only the last 5 datasets to ensure efficiency.
+This is a **Hybrid Analytics Platform** I built to demonstrate how a single backend can power multiple frontend interfaces. The goal was to create a seamless system where a user (like a chemical engineer) could upload data via a desktop app, and a manager could view the analysis instantly on a web dashboard.
 
-## 🔧 Tech Stack
-* **Backend Framework:** Python Django + Django REST Framework (DRF)
-* **Data Processing:** Pandas (CSV parsing & Analytics)
-* **Frontend (Web):** React.js + Material UI (MUI) + Chart.js
-* **Frontend (Desktop):** Python PyQt5 + Matplotlib
-* **Database:** SQLite (Lightweight & efficient)
-* **Tools:** Git, GitHub, VS Code, Postman
+It’s a full-stack application that parses chemical equipment data (Flowrate, Pressure, Temperature), calculates key statistics using Pandas, and visualizes the results in real-time.
 
-## 📽️ Working of the App
-* **Web Dashboard:** The entry point where users can upload `sample_equipment_data.csv`. It displays KPI cards (Total Units, Avg Pressure) and a bar chart of equipment types.
-* **Desktop Interface:** A standalone window mimicking the web UI. It connects to the same API to fetch and display data. It includes a "Refresh" feature to pull the latest changes from the server.
-* **PDF Reporting:** Users can click "Download Report" on the web interface to generate a timestamped PDF summary of the current dataset.
-* **API Logic:** The Django view handles file validation, parses columns, cleans data, and enforces the "Max 5 Files" history rule before saving to the database.
+**What makes this special:**
+It’s not just two separate apps. The **Django Backend** acts as the central brain. If you upload a file on the **PyQt5 Desktop App**, the **React Web Dashboard** updates instantly.
+
+## 🛠️ Tech Stack
+
+* **Backend:** Python Django + REST Framework (The API & Logic)
+* **Data Processing:** Pandas (For CSV parsing & math)
+* **Web Frontend:** React.js + Material UI + Chart.js
+* **Desktop Frontend:** Python PyQt5 + Matplotlib
+* **Database:** SQLite (Lightweight & fast)
+* **Reporting:** ReportLab (PDF Generation)
+
+## 🔑 Key Features
+
+* **True Hybrid Sync:** Upload on Desktop -> View on Web. The data is always synchronized.
+* **Automated Analysis:** You don't need to calculate averages manually. The system automatically computes Flowrate, Pressure, and Temperature stats upon upload.
+* **Visualizations:**
+    * **Web:** Interactive bar charts and responsive KPI cards.
+    * **Desktop:** Native plotting embedded directly into the window.
+* **PDF Reports:** Generates a downloadable, timestamped PDF summary of the current dataset with one click.
+* **Smart Storage:** To keep things clean, the system automatically manages the database, keeping only the last 5 uploaded datasets.
+
+## 📸 Screenshots
+
+<p align="center">
+  <img width="600" alt="Web Dashboard View" src="assets/desktop-app.png />
+  <br/>
+  <em>React Web Dashboard with Analytics</em>
+</p>
+
+<p align="center">
+  <img width="600" alt="Desktop App View" src="assets/web-dashboard.png" />
+  <br/>
+  <em>PyQt5 Desktop Interface</em>
+</p>
 
 ---
 
 ## 🚀 Installation & Setup Guide
 
-Follow these steps to run the entire system locally. You will need **3 separate terminal windows**.
+To run this locally, you'll need **3 separate terminal windows** (one for the backend, one for the web app, and one for the desktop app).
 
-### 1️⃣ Backend Setup (The Brain)
-*The Django server must be running first.*
+### 1️⃣ Backend Setup (Terminal 1)
+*This must be running first.*
 
 ```bash
 # 1. Navigate to the project root
@@ -61,3 +76,36 @@ pip install django djangorestframework pandas django-cors-headers reportlab
 python manage.py makemigrations
 python manage.py migrate
 python manage.py runserver
+
+```
+2️⃣ Web Dashboard Setup (Terminal 2)
+```
+# 1. Navigate to web folder
+cd frontend-web
+
+# 2. Install dependencies
+npm install
+
+# 3. Start the React server
+npm start
+
+```
+3️⃣ Desktop App Setup (Terminal 3)
+```
+# 1. Navigate to desktop folder
+cd frontend-desktop
+
+# 2. Activate the SAME virtual environment as the backend
+# Windows:
+..\venv\Scripts\activate
+# Mac/Linux:
+source ../venv/bin/activate
+
+# 3. Install desktop libraries
+pip install PyQt5 requests matplotlib
+
+# 4. Run the desktop app
+python main.py
+
+👤 Author
+Chilla Sai Charan
