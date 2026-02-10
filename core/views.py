@@ -108,7 +108,9 @@ class HistoryView(APIView):
         uploads = FileUpload.objects.order_by('-uploaded_at')[:5]
         serializer = FileUploadSerializer(uploads, many=True)
         return Response(serializer.data)
-    
+
+
+
 class ExportPDFView(APIView):
     def get(self, request):
         # 1. Get latest data
@@ -167,3 +169,5 @@ class ExportPDFView(APIView):
         p.save()
         
         return response
+def home(request):
+    return HttpResponse("<h1>Chemical Visualizer Backend is Live! 🚀</h1><p>Use /api/summary/ to get data.</p>")
