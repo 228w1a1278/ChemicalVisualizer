@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
+venv/
+env/
+db.sqlite3
+
+# Node.js (React)
+node_modules/
+frontend-web/node_modules/
+build/
+.DS_Store
+
+# PyCharm/VS Code settings
+.idea/
+.vscode/
