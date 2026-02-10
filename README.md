@@ -38,13 +38,13 @@ It’s not just two separate apps. The **Django Backend** acts as the central br
 ## 📸 Screenshots
 
 <p align="center">
-  <img width="600" alt="Web Dashboard View" src="assets/desktop-app.png" />
+  <img width="600" alt="Web Dashboard View" src="assets/web-dashboard.png" />
   <br/>
   <em>React Web Dashboard with Analytics</em>
 </p>
 
 <p align="center">
-  <img width="600" alt="Desktop App View" src="assets/web-dashboard.png" />
+  <img width="600" alt="Desktop App View" src="assets/desktop-app.png" />
   <br/>
   <em>PyQt5 Desktop Interface</em>
 </p>
