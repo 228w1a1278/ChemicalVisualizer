@@ -6,8 +6,10 @@ from reportlab.lib import colors
 import datetime
 
 import pandas as pd
-from rest_framework.views import APIView
+from sklearn.ensemble import IsolationForest
 from rest_framework.response import Response
+from rest_framework.decorators import api_view
+from rest_framework.views import APIView
 from rest_framework import status
 from django.db.models import Avg, Count
 from .models import FileUpload, EquipmentData
@@ -15,11 +17,12 @@ from .serializers import FileUploadSerializer, EquipmentDataSerializer
 
 class UploadCSVView(APIView):
     def post(self, request):
+        print("🚨 UPLOAD ENDPOINT HIT! If you see this, the correct view is running.")
         file_obj = request.FILES.get('file')
         if not file_obj:
             return Response({"error": "No file provided"}, status=status.HTTP_400_BAD_REQUEST)
 
-  
+        # Keep only the last 5 uploads
         if FileUpload.objects.count() >= 5:
             oldest = FileUpload.objects.order_by('uploaded_at').first()
             if oldest:
@@ -27,10 +30,9 @@ class UploadCSVView(APIView):
 
         try:
             df = pd.read_csv(file_obj)
-            
             df.columns = df.columns.str.strip()
             
-            # Check columns again
+            # 1. Check columns FIRST before doing any AI math
             required_cols = ['Equipment Name', 'Type', 'Flowrate', 'Pressure', 'Temperature']
             missing = [col for col in required_cols if col not in df.columns]
             
@@ -39,25 +41,50 @@ class UploadCSVView(APIView):
                     {"error": f"Missing columns: {missing}. Found: {list(df.columns)}"}, 
                     status=status.HTTP_400_BAD_REQUEST
                 )
-        except Exception as e:
-            return Response({"error": f"Failed to read CSV: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
 
+            # 2. Run the AI Model on the validated dataframe
+            features = df[['Pressure']]
+            model = IsolationForest(contamination=0.15, random_state=42)
+            
+            # Generate the numpy boolean array
+            predictions = model.fit_predict(features) == -1
+            
+            # Attach it back to the dataframe
+            df['is_anomaly'] = predictions
+
+            print(f"✅ DEBUG: AI found {sum(df['is_anomaly'])} anomalies!")
+
+        except Exception as e:
+            return Response({"error": f"Failed to read CSV or run AI model: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 3. Create the Database Instances
         upload_instance = FileUpload.objects.create(file_name=file_obj.name)
         
-        data_instances = [
-            EquipmentData(
-                upload=upload_instance,
-                equipment_name=row['Equipment Name'],
-                equipment_type=row['Type'],
-                flowrate=row['Flowrate'],
-                pressure=row['Pressure'],
-                temperature=row['Temperature']
+        data_instances = []
+        for _, row in df.iterrows():
+            # Force the numpy boolean to a standard Python boolean
+            # If row['is_anomaly'] is True, python_bool will be True.
+            python_bool = bool(row['is_anomaly'])
+            
+            data_instances.append(
+                EquipmentData(
+                    upload=upload_instance,
+                    equipment_name=row['Equipment Name'],
+                    equipment_type=row['Type'],
+                    flowrate=row['Flowrate'],
+                    pressure=row['Pressure'],
+                    temperature=row['Temperature'],
+                    is_anomaly=python_bool # Using the safe boolean!
+                )
             )
-            for _, row in df.iterrows()
-        ]
+        
         EquipmentData.objects.bulk_create(data_instances)
 
-        return Response({"message": "File uploaded and processed successfully", "id": upload_instance.id}, status=status.HTTP_201_CREATED)
+        # 4. Return success ONLY after everything is saved
+        return Response(
+            {"message": "File uploaded, AI analyzed, and processed successfully", "id": upload_instance.id}, 
+            status=status.HTTP_201_CREATED
+        )
 
 class DashboardDataView(APIView):
     """
@@ -81,7 +108,6 @@ class DashboardDataView(APIView):
 
         type_dist = data_points.values('equipment_type').annotate(count=Count('id'))
 
-
         serializer = EquipmentDataSerializer(data_points, many=True)
 
         return Response({
@@ -101,8 +127,6 @@ class HistoryView(APIView):
         serializer = FileUploadSerializer(uploads, many=True)
         return Response(serializer.data)
 
-
-
 class ExportPDFView(APIView):
     def get(self, request):
         latest_upload = FileUpload.objects.order_by('-uploaded_at').first()
@@ -117,10 +141,8 @@ class ExportPDFView(APIView):
         response = HttpResponse(content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="Report_{latest_upload.file_name}.pdf"'
         
-
         p = canvas.Canvas(response, pagesize=letter)
         width, height = letter
-        
         
         p.setFont("Helvetica-Bold", 20)
         p.drawString(50, height - 50, "Chemical Equipment Report")
@@ -129,13 +151,11 @@ class ExportPDFView(APIView):
         p.drawString(50, height - 80, f"Generated: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}")
         p.drawString(50, height - 100, f"Source File: {latest_upload.file_name}")
         
-        
         p.setStrokeColor(colors.blue)
         p.rect(50, height - 180, 500, 60, fill=0)
         p.drawString(70, height - 140, f"Total Units: {data_points.count()}")
         p.drawString(200, height - 140, f"Avg Flowrate: {int(avg_flow)} m3/h")
         p.drawString(400, height - 140, f"Avg Pressure: {round(avg_pressure, 1)} bar")
-        
         
         y = height - 220
         p.setFont("Helvetica-Bold", 12)
@@ -144,7 +164,6 @@ class ExportPDFView(APIView):
         p.drawString(400, y, "Flowrate")
         p.line(50, y-5, 500, y-5)
         
-    
         y -= 25
         p.setFont("Helvetica", 10)
         for item in data_points[:20]: 
@@ -158,5 +177,6 @@ class ExportPDFView(APIView):
         p.save()
         
         return response
+
 def home(request):
     return HttpResponse("<h1>Chemical Visualizer Backend is Live! 🚀</h1><p>Use /api/summary/ to get data.</p>")

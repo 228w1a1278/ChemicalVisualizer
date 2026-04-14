@@ -14,6 +14,7 @@ class EquipmentData(models.Model):
     flowrate = models.IntegerField()
     pressure = models.FloatField()
     temperature = models.IntegerField()
-
+    is_anomaly = models.BooleanField(default=False)
+    
     def __str__(self):
         return f"{self.equipment_name} - {self.equipment_type}"

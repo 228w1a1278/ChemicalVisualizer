@@ -5,7 +5,7 @@ from .models import FileUpload, EquipmentData
 class EquipmentDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = EquipmentData
-        fields = ['equipment_name', 'equipment_type', 'flowrate', 'pressure', 'temperature']
+        fields = ['equipment_name', 'equipment_type', 'flowrate', 'pressure', 'temperature','is_anomaly']
 
 class FileUploadSerializer(serializers.ModelSerializer):
     class Meta:

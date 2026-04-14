@@ -9,7 +9,6 @@ import ThermostatIcon from '@mui/icons-material/Thermostat';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 
-
 import { getSummary, uploadFile } from '../services/api';
 import KpiCard from '../components/KpiCard';
 import Navbar from '../components/Navbar';
@@ -20,7 +19,6 @@ const Dashboard = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
 
   const fetchData = async () => {
     try {
@@ -35,11 +33,11 @@ const Dashboard = () => {
 
   useEffect(() => { fetchData(); }, []);
 
-const handleDownloadPdf = () => {
-  window.open('http://127.0.0.1:8000/api/export-pdf/', '_blank');
-};
+  const handleDownloadPdf = () => {
+    window.open('http://127.0.0.1:8000/api/export-pdf/', '_blank');
+  };
 
-const handleFileChange = async (e) => {
+  const handleFileChange = async (e) => {
     if (!e.target.files[0]) return;
     
     setLoading(true);
@@ -73,6 +71,8 @@ const handleFileChange = async (e) => {
     ],
   };
 
+  const anomalies = data?.data?.filter(row => row.is_anomaly) || [];
+
   return (
     <div style={{ backgroundColor: '#f4f6f8', minHeight: '100vh', paddingBottom: '20px' }}>
       <Navbar />
@@ -89,32 +89,46 @@ const handleFileChange = async (e) => {
             </Typography>
           </div>
 
-          {/* Upload Button */}
-          <Button
-            variant="contained"
-            component="label"
-            startIcon={loading ? <CircularProgress size={20} color="inherit"/> : <CloudUploadIcon />}
-            sx={{ padding: '10px 20px', fontSize: '1rem', backgroundColor: '#1976d2' }}
-          >
-            {loading ? "Processing..." : "Upload CSV"}
-            <input type="file" hidden accept=".csv" onChange={handleFileChange} />
-          </Button>
-        <Button 
-           variant="outlined" 
-           color="secondary"
-           startIcon={<PictureAsPdfIcon />}
-           onClick={handleDownloadPdf}
-           sx={{ mr: 2, padding: '10px 20px' }} 
-          >
-          Download Report
-        </Button>
-
+          <Box>
+            <Button 
+              variant="outlined" 
+              color="secondary"
+              startIcon={<PictureAsPdfIcon />}
+              onClick={handleDownloadPdf}
+              sx={{ mr: 2, padding: '10px 20px' }} 
+            >
+              Download Report
+            </Button>
+            {/* Upload Button */}
+            <Button
+              variant="contained"
+              component="label"
+              startIcon={loading ? <CircularProgress size={20} color="inherit"/> : <CloudUploadIcon />}
+              sx={{ padding: '10px 20px', fontSize: '1rem', backgroundColor: '#1976d2' }}
+            >
+              {loading ? "Processing..." : "Upload CSV"}
+              <input type="file" hidden accept=".csv" onChange={handleFileChange} />
+            </Button>
+          </Box>
         </Box>
 
         {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
 
         {data && (
           <>
+            {/* --- NEW AI FEATURE: Anomaly Alert Banner --- */}
+            {anomalies.length > 0 && (
+              <Alert severity="warning" sx={{ mb: 3, border: '1px solid #ff9800', backgroundColor: '#fff4e5' }}>
+                <Typography variant="subtitle1" fontWeight="bold" color="#ed6c02">
+                  ⚠️ AI Alert: {anomalies.length} Anomalies Detected!
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  The unusual pressure readings in the following equipment: 
+                  <strong> {anomalies.map(a => a.equipment_name).join(', ')}</strong>.
+                </Typography>
+              </Alert>
+            )}
+
             <Grid container spacing={3} mb={4}>
               <Grid item xs={12} sm={6} md={3}>
                 <KpiCard title="Total Units" value={data.stats.total_count} unit="" icon={<AssessmentIcon />} color="#3f51b5" />
@@ -133,7 +147,7 @@ const handleFileChange = async (e) => {
             {/* Main Content: Chart & Table */}
             <Grid container spacing={3}>
               {/* Chart Section */}
-              <Grid item xs={12} md={7}>
+              <Grid item xs={12} md={6}>
                 <Paper sx={{ p: 3, display: 'flex', flexDirection: 'column', height: 400 }}>
                   <Typography component="h2" variant="h6" color="primary" gutterBottom>
                     Equipment Distribution
@@ -145,25 +159,47 @@ const handleFileChange = async (e) => {
               </Grid>
 
               {/* Data Preview Table */}
-              <Grid item xs={12} md={5}>
+              <Grid item xs={12} md={6}>
                 <Paper sx={{ p: 3, display: 'flex', flexDirection: 'column', height: 400, overflow: 'auto' }}>
                   <Typography component="h2" variant="h6" color="primary" gutterBottom>
-                    Recent Records
+                    Recent Records & AI Status
                   </Typography>
-                  <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
+                  <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
                     <thead>
                       <tr style={{ borderBottom: '2px solid #eee' }}>
                         <th style={{ padding: '8px' }}>Name</th>
                         <th style={{ padding: '8px' }}>Type</th>
                         <th style={{ padding: '8px' }}>Flow</th>
+                        {/* --- NEW AI FEATURE: Added Pressure Column --- */}
+                        <th style={{ padding: '8px' }}>Pressure</th>
+                        {/* --- NEW AI FEATURE: Added Status Column --- */}
+                        <th style={{ padding: '8px' }}>AI Status</th>
                       </tr>
                     </thead>
                     <tbody>
                       {data.data.slice(0, 8).map((row, i) => (
-                        <tr key={i} style={{ borderBottom: '1px solid #eee' }}>
+                        <tr 
+                          key={i} 
+                          // --- NEW AI FEATURE: Row Highlighting ---
+                          style={{ 
+                            borderBottom: '1px solid #eee', 
+                            backgroundColor: row.is_anomaly ? '#ffebee' : 'transparent' 
+                          }}
+                        >
                           <td style={{ padding: '8px' }}>{row.equipment_name}</td>
                           <td style={{ padding: '8px' }}>{row.equipment_type}</td>
                           <td style={{ padding: '8px' }}>{row.flowrate}</td>
+                          {/* Highlight the specific pressure that caused the anomaly */}
+                          <td style={{ 
+                            padding: '8px', 
+                            color: row.is_anomaly ? '#d32f2f' : 'inherit', 
+                            fontWeight: row.is_anomaly ? 'bold' : 'normal' 
+                          }}>
+                            {row.pressure}
+                          </td>
+                          <td style={{ padding: '8px', fontWeight: 'bold', color: row.is_anomaly ? '#d32f2f' : '#2e7d32' }}>
+                            {row.is_anomaly ? '⚠️ Alert' : '✅ OK'}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
